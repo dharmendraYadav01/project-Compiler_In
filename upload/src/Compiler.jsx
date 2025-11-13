@@ -10,7 +10,7 @@ import refresh from './pics/refresh.png';
 import format from './pics/format.png';
 import light from './pics/light_mode.png';
 import dark from './pics/dark_mode.png';
-import aiIcon from './pics/ai_mode.png';
+import delet from './pics/delete.png';
 import { SiRobotframework } from "react-icons/si";
 import { IoCloseOutline } from "react-icons/io5";
 import { IoMdSend } from "react-icons/io";
@@ -339,10 +339,11 @@ export default function Compiler() {
                 </div>
               </div>
               <div className="right-toolbar1-terminal">
-                <button title='Clear' className="button-2" onClick={handleClearOutput}>Clear</button>&nbsp;&nbsp;
-                <button title='Send Input' className="button-2" onClick={handleRun} disabled={isRunning}>
+                <button title='Delete Output'><img className='delete' src={delet} alt="delete" onClick={handleClearOutput} /></button>&nbsp;&nbsp;
+                {/* <button title='Clear' className="button-2" onClick={handleClearOutput}>Clear</button>&nbsp;&nbsp; */}
+                {/* <button title='Send Input' className="button-2" onClick={handleRun} disabled={isRunning}>
                   <IoMdSend />
-                </button>
+                </button> */}
               </div>
             </div>
             <div className="code-editor-area-terminal ">
