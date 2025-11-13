@@ -16,6 +16,10 @@ import { IoCloseOutline } from "react-icons/io5";
 import { IoMdSend } from "react-icons/io";
 import "tailwindcss";
 
+
+
+
+
 /**
  * This component has been rebuilt to use the exact original JSX structure
  * so your original CSS (Compilerstyle.css) works unchanged.
@@ -62,6 +66,8 @@ const DUMMY_FILES = ['file1.js', 'file2.cpp', 'file3.c', 'file4.java', 'file5.py
 
 export default function Compiler() {
   // UI state
+  const editorRef = useRef(null);
+
   const [selectedLanguage, setSelectedLanguage] = useState('Javascript');
   const [code, setCode] = useState(codeSnippets['Javascript']);
   const [output, setOutput] = useState(''); // single textarea content (input + output)
@@ -86,6 +92,7 @@ export default function Compiler() {
 
   // Keep the Monaco theme consistent with original
   const handleEditorDidMount = (editor, monaco) => {
+    editorRef.current = editor;
     monaco.editor.defineTheme('my-custom-theme', {
       base: 'vs-dark',
       inherit: true,
@@ -103,6 +110,7 @@ export default function Compiler() {
     setSelectedLanguage(newLang);
     setCode(codeSnippets[newLang]);
   };
+  
 
   // Run -> Submit to Judge0. Terminal (single textarea) is used for stdin and also receives appended output.
   const handleRun = async () => {
@@ -173,6 +181,28 @@ export default function Compiler() {
       setIsRunning(false);
     }
   };
+// ----------------------- FORMAT CODE -----------------------
+const handleFormatCode = () => {
+  if (editorRef.current) {
+    editorRef.current.getAction("editor.action.formatDocument").run();
+  }
+};
+
+
+
+// ----------------------- COPY CODE -----------------------
+const handleCopyCode = () => {
+  navigator.clipboard.writeText(code)
+    .then(() => alert("Copied to clipboard!"))
+    .catch(() => alert("Copy failed!"));
+};
+
+
+// ----------------------- RESET CODE -----------------------
+const handleResetCode = () => {
+  const defaultSnippet = codeSnippets[selectedLanguage];
+  setCode(defaultSnippet);
+};
 
   const handleClearOutput = () => setOutput('');
   const toggleAIMode = () => setIsAIModeOpen(p => !p);
@@ -292,9 +322,22 @@ export default function Compiler() {
                 </div>
               </div>
               <div className="right-toolbar">
-                <button title='Format Code'><img className='copy' src={format} alt="format" /></button>&nbsp;&nbsp;&nbsp;
+                <button title="Format Code" onClick={handleFormatCode}>
+  <img className="copy" src={format} alt="format" />
+</button>
+&nbsp;&nbsp;
+
+<button title='Copy' onClick={handleCopyCode}>
+  <img className='copy' src={copy} alt="copy" />
+</button>&nbsp;&nbsp;
+
+<button title='Reset' onClick={handleResetCode}>
+  <img className='copy' src={refresh} alt="reset" />
+</button>&nbsp;&nbsp;
+
+                {/* <button title='Format Code'><img className='copy' src={format} alt="format" /></button>&nbsp;&nbsp;&nbsp;
                 <button title='Copy'><img className='copy' src={copy} alt="copy" /></button>&nbsp;&nbsp;
-                <button title='Reset'><img className='copy' src={refresh} alt="refresh" /></button>&nbsp;&nbsp;
+                <button title='Reset'><img className='copy' src={refresh} alt="refresh" /></button>&nbsp;&nbsp; */}
                 <select id="output-style" onChange={handleLanguageChange} value={selectedLanguage}>
                   <option>Javascript</option>
                   <option>C++</option>
@@ -311,16 +354,27 @@ export default function Compiler() {
             <div className="code-editor-area flex-grow overflow-hidden">
               <div className="code-editor h-full w-full">
                 <Editor
-                  height="100%"
-                  width="100%"
-                  language={languageMap[selectedLanguage]}
-                  defaultLanguage='javascript'
-                  theme="vs-dark"
-                  options={{ fontSize: 16 }}
-                  value={code}
-                  onChange={(value) => setCode(value || '')}
-                  onMount={handleEditorDidMount}
-                />
+  height="100%"
+  width="100%"
+  language={languageMap[selectedLanguage]}
+  defaultLanguage="javascript"
+  theme="vs-dark"
+  value={code}
+  onChange={(value) => setCode(value || "")}
+  onMount={handleEditorDidMount}
+  options={{
+    fontSize: 16,
+    tabSize: 4,
+    insertSpaces: true,
+    autoIndent: "full",
+    formatOnType: true,
+    formatOnPaste: true,
+    automaticLayout: true,   
+    wordWrap: "on",          
+
+  }}
+/>
+
               </div>
             </div>
           </section>
