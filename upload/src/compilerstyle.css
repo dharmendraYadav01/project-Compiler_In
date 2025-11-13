@@ -33,8 +33,7 @@ header {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 0px;                 /* ✅ Perfect spacing between Theme, AI, Profile */
-  margin-right: 35px;        /* ✅ Small breathing room from right edge */
+  gap: 0px;                 
 }
 
 .right-header .button2 {
@@ -50,9 +49,9 @@ header {
 }
 
 .right-header .setting {
-  width: 26px;               /* ✅ Same original shape */
+  width: 26px;               
   height: 26px;
-  margin-top: 0;             /* ✅ Remove top offset */
+  margin-top: 0;            
   border-radius: 6px;
   object-fit: contain;
   transition: transform 0.2s ease;
@@ -61,7 +60,7 @@ header {
 .right-header .ai {
 align-items: center;
   justify-content: center;
-  width: 22px;               /* ✅ Same size as Theme */
+  width: 22px;              
   height: 22px;
 }
 
@@ -74,7 +73,7 @@ align-items: center;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 0;             /* ✅ Aligned to same baseline */
+  margin-top: 0;          
 }
 
 .right-header .profile-menu-container .img1 {
@@ -82,13 +81,10 @@ align-items: center;
   height: 34px;
   border-radius: 50%;
   object-fit: cover;
-  margin-top: 0;             /* ✅ Removed uneven top offset */
+  margin-top: 0;          
   transition: transform 0.2s ease;
 }
 
-/* .right-header .profile-menu-container .img1:hover {
-  transform: scale(1.05);
-} */
 
 
 .right-header1 {
@@ -196,7 +192,6 @@ main {
     vertical-align: middle;
 }
 
-/* -------------------------------------------------------------- */
 
 .leftheading {
     display: flex;
