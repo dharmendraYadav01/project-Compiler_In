@@ -76,6 +76,7 @@ export default function Compiler() {
   return btoa(unescape(encodeURIComponent(str)));
 };
 
+
   const editorRef = useRef(null);
 
   const [selectedLanguage, setSelectedLanguage] = useState('Javascript');
@@ -206,17 +207,39 @@ const finalCode = selectedLanguage === "C++"
 
       // judge0 returns compile_output / stderr / stdout (not base64 if base64_encoded=false)
       let resultText = '\n=== Execution Result ===\n';
+////////////////////////////////////////////////////mera hai/////////////////////////////////////////////////////////////////
+      let hasError = false;
 
-      if (data.compile_output) {
-  resultText += `Compile Error:\n${decodeBase64(data.compile_output)}\n`;
+// COMPILATION ERROR
+if (data.compile_output) {
+  hasError = true;
+  resultText += `\n Compile Error:\n${decodeBase64(data.compile_output)}\n`;
 }
 
+// RUNTIME ERROR
 if (data.stderr) {
-  resultText += `Runtime Error:\n${decodeBase64(data.stderr)}\n`;
+  hasError = true;
+  resultText += `\n Runtime Error:\n${decodeBase64(data.stderr)}\n`;
 }
 
+// SUCCESS OUTPUT
 if (data.stdout) {
-  resultText += `Output:\n${decodeBase64(data.stdout)}\n`;
+  resultText += `\n Output:\n${decodeBase64(data.stdout)}\n`;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+if (hasError) {
+  setOutput(prev => prev + `\n=== ERROR ===\n`);
+  setTimeout(() => {
+    if (textareaRef.current) {
+      textareaRef.current.classList.add("error-output");
+    }
+  }, 10);
+} else {
+  setTimeout(() => {
+    if (textareaRef.current) {
+      textareaRef.current.classList.remove("error-output");
+    }
+  }, 10);
 }
 
 
@@ -438,6 +461,24 @@ const handleResetCode = () => {
     wordWrap: "on",          
 
   }}
+  onValidate={(markers) => {
+  if (!textareaRef.current) return;
+
+  if (markers.length > 0) {
+    const first = markers[0];
+    const msg = `${first.message} (line ${first.startLineNumber})`;
+
+    // Show syntax error in terminal
+    setOutput(`Syntax Error:\n${msg}`);
+
+    // Color the terminal error in RED
+    textareaRef.current.classList.add("error-output");
+  } else {
+    // Remove red coloring if syntax is fixed
+    textareaRef.current.classList.remove("error-output");
+  }
+}}
+
 />
 
               </div>
