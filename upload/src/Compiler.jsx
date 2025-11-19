@@ -17,9 +17,6 @@ import { IoMdSend } from "react-icons/io";
 import "tailwindcss";
 
 
-
-
-
 /**
  * This component has been rebuilt to use the exact original JSX structure
  * so your original CSS (Compilerstyle.css) works unchanged.
@@ -27,6 +24,7 @@ import "tailwindcss";
  * Terminal behavior: SINGLE textarea used for BOTH input and output (Option A).
  * Judge0 API integrated — stdin uses the current textarea contents.
  */
+
 
 const codeSnippets = {
   'Javascript': `// Javascript
@@ -66,6 +64,18 @@ const DUMMY_FILES = ['file1.js', 'file2.cpp', 'file3.c', 'file4.java', 'file5.py
 
 export default function Compiler() {
   // UI state
+  const decodeBase64 = (b64) => {
+  try {
+    return decodeURIComponent(escape(atob(b64)));
+  } catch {
+    return "";
+  }
+};
+
+  const encodeBase64 = (str) => {
+  return btoa(unescape(encodeURIComponent(str)));
+};
+
   const editorRef = useRef(null);
 
   const [selectedLanguage, setSelectedLanguage] = useState('Javascript');
@@ -111,6 +121,46 @@ export default function Compiler() {
     setCode(codeSnippets[newLang]);
   };
   
+  // ----------------------- BUILT-IN C++ LIBRARY -----------------------
+const cppBuiltins = `
+#include <bits/stdc++.h>
+using namespace std;
+
+// Print
+template<typename T>
+void print(T x) { cout << x << "\\n"; }
+
+// Print vector
+template<typename T>
+void print(vector<T> v) { for (auto &x : v) cout << x << " "; cout << "\\n"; }
+
+// gcd
+int gcd(int a, int b) { return __gcd(a, b); }
+
+// lcm
+int lcm(int a, int b) { return a / __gcd(a, b) * b; }
+
+// Min / Max
+int minInt(int a, int b) { return min(a, b); }
+int maxInt(int a, int b) { return max(a, b); }
+
+// Sum of vector
+int sumVector(vector<int> &v) { return accumulate(v.begin(), v.end(), 0); }
+
+// Sort vector
+vector<int> sortVector(vector<int> v) { sort(v.begin(), v.end()); return v; }
+
+// Reverse vector
+vector<int> reverseVector(vector<int> v) { reverse(v.begin(), v.end()); return v; }
+
+// Check prime
+bool isPrime(int n) {
+    if (n <= 1) return false;
+    for (int i = 2; i * i <= n; i++)
+        if (n % i == 0) return false;
+    return true;
+}
+`;
 
   // Run -> Submit to Judge0. Terminal (single textarea) is used for stdin and also receives appended output.
   const handleRun = async () => {
@@ -122,15 +172,27 @@ export default function Compiler() {
     setOutput(prev => (prev ? prev + '\n' : '') + '⏳ Submitting to Judge0...\n');
 
     try {
+      const userHasMain = code.includes("int main");
+
+const finalCode = selectedLanguage === "C++"
+  ? (userHasMain 
+        ? cppBuiltins + "\n" + code 
+        : cppBuiltins + "\nint main(){\n" + code + "\n}")
+  : code;
+
       const payload = {
-        source_code: code,
+        
+        source_code: encodeBase64(finalCode),
         language_id: judge0LangId[selectedLanguage],
-        stdin: currentTerminal // per Option A: use full textarea as stdin
+        stdin: encodeBase64(currentTerminal) // per Option A: use full textarea as stdin
       };
 
-      const res = await fetch("https://ce.judge0.com/submissions/?base64_encoded=false&wait=true", {
+      const res = await fetch("https://ce.judge0.com/submissions/?base64_encoded=true&wait=true", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+  "Content-Type": "application/json",
+  "Accept": "application/json"
+},
         body: JSON.stringify(payload)
       });
 
@@ -146,16 +208,18 @@ export default function Compiler() {
       let resultText = '\n=== Execution Result ===\n';
 
       if (data.compile_output) {
-        resultText += `Compile Error:\n${data.compile_output}\n`;
-      }
+  resultText += `Compile Error:\n${decodeBase64(data.compile_output)}\n`;
+}
 
-      if (data.stderr) {
-        resultText += `Runtime Error:\n${data.stderr}\n`;
-      }
+if (data.stderr) {
+  resultText += `Runtime Error:\n${decodeBase64(data.stderr)}\n`;
+}
 
-      if (data.stdout) {
-        resultText += `Output:\n${data.stdout}\n`;
-      }
+if (data.stdout) {
+  resultText += `Output:\n${decodeBase64(data.stdout)}\n`;
+}
+
+
 
       if (!data.compile_output && !data.stderr && !data.stdout) {
         // fallback to status description
@@ -163,6 +227,7 @@ export default function Compiler() {
           resultText += `Status: ${data.status.description}\n`;
         } else {
           resultText += 'No output received.\n';
+
         }
       }
 
@@ -450,4 +515,4 @@ const handleResetCode = () => {
       </main>
     </div>
   );
-}
+} 
